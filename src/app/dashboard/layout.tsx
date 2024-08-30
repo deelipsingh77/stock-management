@@ -80,9 +80,10 @@ const Layout = ({ children }: LayoutProps) => {
                 size="icon"
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
                 aria-label="Toggle theme"
+                className="text-gray-700 dark:text-gray-300 hover:text-gray-800 hover:dark:text-gray-800"
               >
                 {theme === "dark" ? (
-                  <Sun className="h-5 w-5 text-white" />
+                  <Sun className="h-5 w-5" />
                 ) : (
                   <Moon className="h-5 w-5" />
                 )}

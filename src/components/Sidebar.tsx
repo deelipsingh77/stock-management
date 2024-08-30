@@ -92,7 +92,7 @@ export default function Sidebar({
                       >
                         <AccordionTrigger className="flex items-center py-2 px-4 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md">
                           <item.icon className="h-5 w-5 mr-3" />
-                          <span className="flex-1">{item.title}</span>
+                          <span className="flex-1 text-left">{item.title}</span>
                         </AccordionTrigger>
                         <AccordionContent>
                           <ul className="pl-4 space-y-2">
