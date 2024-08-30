@@ -1,7 +1,12 @@
+import AuthRedirect from "@/utils/AuthRedirect";
+import ProtectedRoute from "@/utils/ProtectedRoute";
+
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      Hello World!
-    </main>
+    <AuthRedirect>
+      <ProtectedRoute>
+        <div></div>
+      </ProtectedRoute>
+    </AuthRedirect>
   );
 }
