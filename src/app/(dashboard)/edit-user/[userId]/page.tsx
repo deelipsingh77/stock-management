@@ -14,11 +14,11 @@ import {
 } from "@/components/ui/select";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import axios from "axios";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const formSchema = z.object({
-  userId: z.string().min(1, "User ID is required"),
   username: z.string().min(1, "Username is required"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
   email: z.string().email("Invalid email address"),
   phoneNo: z
     .string()
@@ -36,31 +36,81 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-export default function ProfileForm() {
+export default function EditUser({ params }: { params: { userId: string } }) {
+  const [user, setUser] = useState<FormData | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
   const {
     register,
     handleSubmit,
     setValue,
+    getValues,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
   });
 
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await axios.get(
+          (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000") + `/api/v1/users/${params.userId}`,
+          {
+            withCredentials: true, // Include cookies if required
+          }
+        );
+        setUser(response.data.message);
+
+        // Set form values
+        const userData = response.data.message;
+        console.log(userData);
+        
+        setValue("username", userData.username);
+        setValue("email", userData.email);
+        setValue("phoneNo", userData.phoneNumber || "");
+        setValue("companyName", userData.company || "");
+        setValue("zoneName", userData.zone || "");
+        setValue("branchName", userData.branch || "");
+        setValue("divisionName", userData.division || "");
+        setValue("userType", userData.role || "");
+        setValue("organization", userData.organization || "");
+        setValue("lob", userData.lob || "");
+        setValue("isScoreReportUser", userData.isScoreReportUser || false);
+
+        setLoading(false);
+      } catch (err) {
+        console.error("Fetch Error:", err);
+        setError("Failed to fetch user details.");
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, [params.userId]);
+
   const onSubmit = async (data: FormData) => {
     try {
-      const response = await axios.post(
-        (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000") +
-          "/api/v1/users/register",
-        data
+      console.log(data);
+      
+      await axios.patch(
+        (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000") + `/api/v1/users/${params.userId}`,
+        data,
+        {
+          withCredentials: true, // Include cookies if required
+        }
       );
-      console.log(response);
+      router.push("/manage-users"); // Redirect to users list or any other page
     } catch (error) {
-      console.error("Error submitting form", error);
+      console.error("Update Error:", error);
+      setError("Failed to update user.");
     }
   };
 
   const handleSelectChange = (name: keyof FormData) => (value: string) => {
-    setValue(name, value as any);
+    setValue(name, value as any, { shouldValidate: true });
   };
 
   // Aggregate and filter errors
@@ -68,6 +118,9 @@ export default function ProfileForm() {
     .map((error) => error.message)
     .filter((message) => message && !message.startsWith("Required"))
     .join(", ");
+
+  if (loading) return <p className="text-gray-700 dark:text-gray-300">Loading...</p>;
+  if (error) return <p className="text-red-600 dark:text-red-400">{error}</p>;
 
   return (
     <div className="flex justify-center bg-gray-100 dark:bg-gray-900">
@@ -82,154 +135,123 @@ export default function ProfileForm() {
           )}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <Label className="block text-gray-700 dark:text-gray-300">
-                User ID
-              </Label>
-              <Input
-                {...register("userId")}
-                placeholder="Enter User ID"
-                className="mt-1 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
-              />
-            </div>
-            <div>
-              <Label className="block text-gray-700 dark:text-gray-300">
-                Username
-              </Label>
+              <Label className="block text-gray-700 dark:text-gray-300">Username</Label>
               <Input
                 {...register("username")}
                 placeholder="Enter Username"
                 className="mt-1 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
               />
+              {errors.username && <p className="text-red-600 dark:text-red-400">{errors.username.message}</p>}
             </div>
             <div>
-              <Label className="block text-gray-700 dark:text-gray-300">
-                Password
-              </Label>
-              <Input
-                {...register("password")}
-                type="password"
-                placeholder="Enter Password"
-                className="mt-1 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
-              />
-            </div>
-            <div>
-              <Label className="block text-gray-700 dark:text-gray-300">
-                Email
-              </Label>
+              <Label className="block text-gray-700 dark:text-gray-300">Email</Label>
               <Input
                 {...register("email")}
                 type="email"
                 placeholder="Enter Email"
                 className="mt-1 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
               />
+              {errors.email && <p className="text-red-600 dark:text-red-400">{errors.email.message}</p>}
             </div>
             <div>
-              <Label className="block text-gray-700 dark:text-gray-300">
-                Phone Number
-              </Label>
+              <Label className="block text-gray-700 dark:text-gray-300">Phone Number</Label>
               <Input
                 {...register("phoneNo")}
                 placeholder="Enter Phone Number"
                 className="mt-1 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
               />
+              {errors.phoneNo && <p className="text-red-600 dark:text-red-400">{errors.phoneNo.message}</p>}
             </div>
             <div>
-              <Label className="block text-gray-700 dark:text-gray-300 mb-1">
-                Company Name
-              </Label>
-              <Select onValueChange={handleSelectChange("companyName")}>
+              <Label className="block text-gray-700 dark:text-gray-300 mb-1">Company Name</Label>
+              <Select value={getValues("companyName")} onValueChange={handleSelectChange("companyName")}>
                 <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
-                  {errors.companyName?.message || "Select Company Name"}
+                  {getValues("companyName") || "Select Company Name"}
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Company A">Company A</SelectItem>
                   <SelectItem value="Company B">Company B</SelectItem>
                 </SelectContent>
               </Select>
+              {errors.companyName && <p className="text-red-600 dark:text-red-400">{errors.companyName.message}</p>}
             </div>
             <div>
-              <Label className="block text-gray-700 dark:text-gray-300 mb-1">
-                Zone Name
-              </Label>
-              <Select onValueChange={handleSelectChange("zoneName")}>
+              <Label className="block text-gray-700 dark:text-gray-300 mb-1">Zone Name</Label>
+              <Select value={getValues("zoneName")} onValueChange={handleSelectChange("zoneName")}>
                 <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
-                  {errors.zoneName?.message || "Select Zone Name"}
+                  {getValues("zoneName") || "Select Zone Name"}
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Zone 1">Zone 1</SelectItem>
                   <SelectItem value="Zone 2">Zone 2</SelectItem>
                 </SelectContent>
               </Select>
+              {errors.zoneName && <p className="text-red-600 dark:text-red-400">{errors.zoneName.message}</p>}
             </div>
             <div>
-              <Label className="block text-gray-700 dark:text-gray-300 mb-1">
-                Branch Name
-              </Label>
-              <Select onValueChange={handleSelectChange("branchName")}>
+              <Label className="block text-gray-700 dark:text-gray-300 mb-1">Branch Name</Label>
+              <Select value={getValues("branchName")} onValueChange={handleSelectChange("branchName")}>
                 <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
-                  {errors.branchName?.message || "Select Branch Name"}
+                  {getValues("branchName") || "Select Branch Name"}
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Branch A">Branch A</SelectItem>
                   <SelectItem value="Branch B">Branch B</SelectItem>
                 </SelectContent>
               </Select>
+              {errors.branchName && <p className="text-red-600 dark:text-red-400">{errors.branchName.message}</p>}
             </div>
             <div>
-              <Label className="block text-gray-700 dark:text-gray-300 mb-1">
-                Division Name
-              </Label>
-              <Select onValueChange={handleSelectChange("divisionName")}>
+              <Label className="block text-gray-700 dark:text-gray-300 mb-1">Division Name</Label>
+              <Select value={getValues("divisionName")} onValueChange={handleSelectChange("divisionName")}>
                 <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
-                  {errors.divisionName?.message || "Select Division Name"}
+                  {getValues("divisionName") || "Select Division Name"}
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Division 1">Division 1</SelectItem>
                   <SelectItem value="Division 2">Division 2</SelectItem>
                 </SelectContent>
               </Select>
+              {errors.divisionName && <p className="text-red-600 dark:text-red-400">{errors.divisionName.message}</p>}
             </div>
             <div>
-              <Label className="block text-gray-700 dark:text-gray-300 mb-1">
-                User Type
-              </Label>
-              <Select onValueChange={handleSelectChange("userType")}>
+              <Label className="block text-gray-700 dark:text-gray-300 mb-1">User Type</Label>
+              <Select value={getValues("userType")} onValueChange={handleSelectChange("userType")}>
                 <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
-                  {errors.userType?.message || "Select User Type"}
+                  {getValues("userType") || "Select User Type"}
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Admin">Admin</SelectItem>
                   <SelectItem value="User">User</SelectItem>
                 </SelectContent>
               </Select>
+              {errors.userType && <p className="text-red-600 dark:text-red-400">{errors.userType.message}</p>}
             </div>
             <div>
-              <Label className="block text-gray-700 dark:text-gray-300 mb-1">
-                Organization
-              </Label>
-              <Select onValueChange={handleSelectChange("organization")}>
+              <Label className="block text-gray-700 dark:text-gray-300 mb-1">Organization</Label>
+              <Select value={getValues("organization")} onValueChange={handleSelectChange("organization")}>
                 <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
-                  {errors.organization?.message || "Select Organization"}
+                  {getValues("organization") || "Select Organization"}
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Org A">Org A</SelectItem>
                   <SelectItem value="Org B">Org B</SelectItem>
                 </SelectContent>
               </Select>
+              {errors.organization && <p className="text-red-600 dark:text-red-400">{errors.organization.message}</p>}
             </div>
             <div>
-              <Label className="block text-gray-700 dark:text-gray-300 mb-1">
-                Lob
-              </Label>
-              <Select onValueChange={handleSelectChange("lob")}>
+              <Label className="block text-gray-700 dark:text-gray-300 mb-1">Lob</Label>
+              <Select value={getValues("lob")} onValueChange={handleSelectChange("lob")}>
                 <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
-                  {errors.lob?.message || "Select Lob"}
+                  {getValues("lob") || "Select Lob"}
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Lob A">Lob A</SelectItem>
                   <SelectItem value="Lob B">Lob B</SelectItem>
                 </SelectContent>
               </Select>
+              {errors.lob && <p className="text-red-600 dark:text-red-400">{errors.lob.message}</p>}
             </div>
             <div>
               <Label className="block text-gray-700 dark:text-gray-300">
@@ -238,8 +260,9 @@ export default function ProfileForm() {
               <input
                 {...register("isScoreReportUser")}
                 type="checkbox"
-                className="mt-1 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                className="mt-1 text-gray-900 dark:text-gray-100"
               />
+              {errors.isScoreReportUser && <p className="text-red-600 dark:text-red-400">{errors.isScoreReportUser.message}</p>}
             </div>
           </div>
           <div className="flex justify-end">
