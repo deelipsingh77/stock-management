@@ -10,6 +10,7 @@ import {
   SelectItem,
   SelectTrigger,
 } from "@/components/ui/select";
+import axios from "axios";
 
 export default function ProfileForm() {
   const [formValues, setFormValues] = useState({
@@ -43,9 +44,16 @@ export default function ProfileForm() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Process form submission here
+    try {
+      const response = await axios.post(
+        (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000") +
+          "/api/v1/users/register",
+        formValues
+      );
+      console.log(response);
+    } catch (error) {}
     console.log("Form submitted", formValues);
   };
 
@@ -63,7 +71,7 @@ export default function ProfileForm() {
                 value={formValues.userId}
                 onChange={handleChange}
                 placeholder="Enter User ID"
-                className="mt-1"
+                className="mt-1 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
               />
             </div>
             <div>
@@ -75,7 +83,7 @@ export default function ProfileForm() {
                 value={formValues.username}
                 onChange={handleChange}
                 placeholder="Enter Username"
-                className="mt-1"
+                className="mt-1 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
               />
             </div>
             <div>
@@ -88,7 +96,7 @@ export default function ProfileForm() {
                 value={formValues.password}
                 onChange={handleChange}
                 placeholder="Enter Password"
-                className="mt-1"
+                className="mt-1 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
               />
             </div>
             <div>
@@ -101,7 +109,7 @@ export default function ProfileForm() {
                 value={formValues.email}
                 onChange={handleChange}
                 placeholder="Enter Email"
-                className="mt-1"
+                className="mt-1 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
               />
             </div>
             <div>
@@ -113,7 +121,7 @@ export default function ProfileForm() {
                 value={formValues.phoneNo}
                 onChange={handleChange}
                 placeholder="Enter Phone Number"
-                className="mt-1"
+                className="mt-1 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
               />
             </div>
             <div>
@@ -121,7 +129,7 @@ export default function ProfileForm() {
                 Company Name
               </Label>
               <Select onValueChange={handleSelectChange("companyName")}>
-                <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md">
+                <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
                   {formValues.companyName || "Select Company Name"}
                 </SelectTrigger>
                 <SelectContent>
@@ -136,7 +144,7 @@ export default function ProfileForm() {
                 Zone Name
               </Label>
               <Select onValueChange={handleSelectChange("zoneName")}>
-                <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md">
+                <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
                   {formValues.zoneName || "Select Zone Name"}
                 </SelectTrigger>
                 <SelectContent>
@@ -151,7 +159,7 @@ export default function ProfileForm() {
                 Branch Name
               </Label>
               <Select onValueChange={handleSelectChange("branchName")}>
-                <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md">
+                <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
                   {formValues.branchName || "Select Branch Name"}
                 </SelectTrigger>
                 <SelectContent>
@@ -166,7 +174,7 @@ export default function ProfileForm() {
                 Division Name
               </Label>
               <Select onValueChange={handleSelectChange("divisionName")}>
-                <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md">
+                <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
                   {formValues.divisionName || "Select Division Name"}
                 </SelectTrigger>
                 <SelectContent>
@@ -181,7 +189,7 @@ export default function ProfileForm() {
                 User Type
               </Label>
               <Select onValueChange={handleSelectChange("userType")}>
-                <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md">
+                <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
                   {formValues.userType || "Select User Type"}
                 </SelectTrigger>
                 <SelectContent>
@@ -196,7 +204,7 @@ export default function ProfileForm() {
                 Organization
               </Label>
               <Select onValueChange={handleSelectChange("organization")}>
-                <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md">
+                <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
                   {formValues.organization || "Select Organization"}
                 </SelectTrigger>
                 <SelectContent>
@@ -211,7 +219,7 @@ export default function ProfileForm() {
                 Lob
               </Label>
               <Select onValueChange={handleSelectChange("lob")}>
-                <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md">
+                <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
                   {formValues.lob || "Select Lob"}
                 </SelectTrigger>
                 <SelectContent>
@@ -222,8 +230,15 @@ export default function ProfileForm() {
               </Select>
             </div>
             <div className="flex gap-4 text-sm col-span-2">
-              <p>Is Score Report User</p>
-              <input type="checkbox" name="isScoreReportUser" onChange={handleChange} />
+              <p className="text-gray-700 dark:text-white">
+                Is Score Report User
+              </p>
+              <input
+                type="checkbox"
+                name="isScoreReportUser"
+                onChange={handleChange}
+                className="w-4 h-4 text-blue-600 dark:text-blue-500"
+              />
             </div>
           </div>
           <Button
