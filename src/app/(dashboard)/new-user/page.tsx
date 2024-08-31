@@ -11,6 +11,7 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import axios from "axios";
@@ -41,6 +42,7 @@ export default function ProfileForm() {
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -62,6 +64,15 @@ export default function ProfileForm() {
   const handleSelectChange = (name: keyof FormData) => (value: string) => {
     setValue(name, value as any);
   };
+
+  // Watch values for Select fields
+  const companyName = watch("companyName");
+  const zoneName = watch("zoneName");
+  const branchName = watch("branchName");
+  const divisionName = watch("divisionName");
+  const userType = watch("userType");
+  const organization = watch("organization");
+  const lob = watch("lob");
 
   // Aggregate and filter errors
   const errorMessages = Object.values(errors)
@@ -139,7 +150,9 @@ export default function ProfileForm() {
               </Label>
               <Select onValueChange={handleSelectChange("companyName")}>
                 <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
-                  {errors.companyName?.message || "Select Company Name"}
+                  <SelectValue placeholder="Select Company Name">
+                    {companyName || "Select Company Name"}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Company A">Company A</SelectItem>
@@ -153,7 +166,9 @@ export default function ProfileForm() {
               </Label>
               <Select onValueChange={handleSelectChange("zoneName")}>
                 <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
-                  {errors.zoneName?.message || "Select Zone Name"}
+                  <SelectValue placeholder="Select Zone Name">
+                    {zoneName || "Select Zone Name"}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Zone 1">Zone 1</SelectItem>
@@ -167,7 +182,9 @@ export default function ProfileForm() {
               </Label>
               <Select onValueChange={handleSelectChange("branchName")}>
                 <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
-                  {errors.branchName?.message || "Select Branch Name"}
+                  <SelectValue placeholder="Select Branch Name">
+                    {branchName || "Select Branch Name"}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Branch A">Branch A</SelectItem>
@@ -181,7 +198,9 @@ export default function ProfileForm() {
               </Label>
               <Select onValueChange={handleSelectChange("divisionName")}>
                 <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
-                  {errors.divisionName?.message || "Select Division Name"}
+                  <SelectValue placeholder="Select Division Name">
+                    {divisionName || "Select Division Name"}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Division 1">Division 1</SelectItem>
@@ -195,7 +214,9 @@ export default function ProfileForm() {
               </Label>
               <Select onValueChange={handleSelectChange("userType")}>
                 <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
-                  {errors.userType?.message || "Select User Type"}
+                  <SelectValue placeholder="Select User Type">
+                    {userType || "Select User Type"}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Admin">Admin</SelectItem>
@@ -209,7 +230,9 @@ export default function ProfileForm() {
               </Label>
               <Select onValueChange={handleSelectChange("organization")}>
                 <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
-                  {errors.organization?.message || "Select Organization"}
+                  <SelectValue placeholder="Select Organization">
+                    {organization || "Select Organization"}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Org A">Org A</SelectItem>
@@ -223,11 +246,13 @@ export default function ProfileForm() {
               </Label>
               <Select onValueChange={handleSelectChange("lob")}>
                 <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
-                  {errors.lob?.message || "Select Lob"}
+                  <SelectValue placeholder="Select Lob">
+                    {lob || "Select Lob"}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Lob A">Lob A</SelectItem>
-                  <SelectItem value="Lob B">Lob B</SelectItem>
+                  <SelectItem value="Lob 1">Lob 1</SelectItem>
+                  <SelectItem value="Lob 2">Lob 2</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -242,8 +267,11 @@ export default function ProfileForm() {
               />
             </div>
           </div>
-          <div className="flex justify-end">
-            <Button type="submit">Submit</Button>
+
+          <div className="mt-6">
+            <Button type="submit" className="w-full">
+              Submit
+            </Button>
           </div>
         </form>
       </div>
