@@ -18,8 +18,6 @@ interface User {
   role: string;
   createdAt: string;
   updatedAt: string;
-  refreshToken: string;
-  accessToken: string;
 }
 
 interface AuthContextType {
@@ -42,21 +40,50 @@ const API_BASE_URL = "http://localhost:8000";
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState<boolean>(false); //set to false temporarily
+  const [loading, setLoading] = useState<boolean>(true); // Start with loading true until we check auth status
   const [error, setError] = useState<string | null>(null);
+
+  // Setup axios instance with interceptors
+  const axiosInstance = axios.create({
+    baseURL: API_BASE_URL,
+    withCredentials: true,
+  });
+
+  // Axios interceptor to handle refreshing tokens
+  axiosInstance.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+      if (error.response.status === 401) {
+        try {
+          // Try refreshing the token
+          const refreshResponse = await axios.post(
+            `${API_BASE_URL}/api/v1/users/refresh-token`,
+            {},
+            { withCredentials: true }
+          );
+          
+          // Retry the original request with new token
+          return axiosInstance(error.config);
+        } catch (refreshError) {
+          // If refresh also fails, logout the user
+          setUser(null);
+          setError("Session expired. Please log in again.");
+        }
+      }
+      return Promise.reject(error);
+    }
+  );
 
   // Check the user's authentication status
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
-        const response = await axios.get(
-          API_BASE_URL + "/api/v1/users/current-user",
-          {
-            withCredentials: true,
-          }
-        );
+        const response = await axiosInstance.get("/api/v1/users/current-user");
+        console.log(response);
+        
         setUser(response.data.message);
       } catch (error) {
+        // Handle failed auth check (e.g., token expired)
         setUser(null);
       } finally {
         setLoading(false);
@@ -70,11 +97,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const login = async (username: string, password: string) => {
     try {
       setLoading(true);
-      const response = await axios.post(
-        API_BASE_URL + "/api/v1/users/login",
-        { username, password },
-        { withCredentials: true }
-      );
+      const response = await axiosInstance.post("/api/v1/users/login", {
+        username,
+        password,
+      });
       setUser(response.data.message.user);
       setError(null);
     } catch (error) {
@@ -89,11 +115,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const logout = async () => {
     try {
       setLoading(true);
-      await axios.post(
-        API_BASE_URL + "/api/v1/users/logout",
-        {},
-        { withCredentials: true }
-      );
+      await axiosInstance.post("/api/v1/users/logout");
       setUser(null);
       setError(null);
     } catch (error) {
@@ -122,7 +144,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error("useauth must be used within an authprovider");
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };

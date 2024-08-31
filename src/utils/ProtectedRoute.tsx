@@ -11,7 +11,7 @@ const ProtectedRoute = ({
 
   useEffect(() => {
     if (user === null) {
-      router.replace("/auth/login");
+      router.replace("/login");
     }
   }, [user, router]);
 

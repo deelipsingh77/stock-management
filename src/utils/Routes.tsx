@@ -9,16 +9,16 @@ interface NavItem {
 }
 
 export const navItems: NavItem[] = [
-  { title: "Home", href: "/dashboard", icon: Home , admin: false},
+  { title: "Home", href: "/", icon: Home , admin: false},
   { 
     title: "Admin", 
-    href: "/dashboard/admin", 
+    href: "/admin", 
     icon: LayoutDashboard,
     submenu: [
-      { title: "New User", href: "/dashboard/new-user", icon: BarChart2 , admin: true},
-      { title: "Manage Users", href: "/dashboard/manage-users", icon: FileText , admin: true},
+      { title: "New User", href: "/new-user", icon: BarChart2 , admin: true},
+      { title: "Manage Users", href: "/manage-users", icon: FileText , admin: true},
     ],
     admin: true,
   },
-  { title: "Settings", href: "/dashboard/settings", icon: Settings , admin: false},
+  { title: "Settings", href: "/settings", icon: Settings , admin: false},
 ]

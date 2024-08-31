@@ -15,7 +15,7 @@ export default function LoginPage() {
   const handleSubmit = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     login(username, password);
-  }
+  };
 
   return (
     <div className="grid w-full max-w-[900px] grid-cols-1 rounded-lg border bg-background shadow-sm md:grid-cols-2">
