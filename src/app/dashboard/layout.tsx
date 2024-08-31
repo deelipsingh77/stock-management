@@ -16,6 +16,7 @@ import Sidebar from "@/components/Sidebar";
 import { useTheme } from "next-themes";
 import React from "react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/context/AuthContext";
 
 interface LayoutProps {
   children: ReactNode;
@@ -25,6 +26,7 @@ const Layout = ({ children }: LayoutProps) => {
   const [desktopSidebarOpen, setDesktopSidebarOpen] = React.useState(true); // State for desktop sidebar
   const [mounted, setMounted] = React.useState(false);
   const { theme, setTheme } = useTheme();
+  const { logout } = useAuth();
 
   React.useEffect(() => {
     setMounted(true);
@@ -92,7 +94,7 @@ const Layout = ({ children }: LayoutProps) => {
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
-                    className="relative h-8 w-8 rounded-full"
+                    className="relative h-8 w-8 rounded-full border-gray-300 border-2"
                   >
                     <UserCircle className="h-8 w-8 text-gray-700 dark:text-gray-300" />
                   </Button>
@@ -102,7 +104,7 @@ const Layout = ({ children }: LayoutProps) => {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem>Profile</DropdownMenuItem>
                   <DropdownMenuItem>Settings</DropdownMenuItem>
-                  <DropdownMenuItem>Log out</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => logout()}>Log out</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
