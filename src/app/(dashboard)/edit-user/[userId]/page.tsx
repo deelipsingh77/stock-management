@@ -20,18 +20,18 @@ import { useEffect, useState } from "react";
 const formSchema = z.object({
   username: z.string().min(1, "Username is required"),
   email: z.string().email("Invalid email address"),
-  phoneNo: z
+  phoneNumber: z
     .string()
     .min(10, "Phone number must be at least 10 digits")
     .max(15, "Phone number cannot exceed 15 digits"),
-  companyName: z.string().min(1, "Company name is required"),
-  zoneName: z.string().min(1, "Zone name is required"),
-  branchName: z.string().min(1, "Branch name is required"),
-  divisionName: z.string().min(1, "Division name is required"),
-  userType: z.string().min(1, "User type is required"),
-  organization: z.string().min(1, "Organization is required"),
+  company: z.string().min(1, "Company name is required"),
+  zone: z.string().min(1, "Zone name is required"),
+  branch: z.string().min(1, "Branch name is required"),
+  division: z.string().min(1, "Division name is required"),
+  role: z.string().min(1, "User type is required"),
   lob: z.string().min(1, "Lob is required"),
   isScoreReportUser: z.boolean(),
+  organization: z.string().min(1, "Organization is required"),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -70,12 +70,12 @@ export default function EditUser({ params }: { params: { userId: string } }) {
         
         setValue("username", userData.username);
         setValue("email", userData.email);
-        setValue("phoneNo", userData.phoneNumber || "");
-        setValue("companyName", userData.company || "");
-        setValue("zoneName", userData.zone || "");
-        setValue("branchName", userData.branch || "");
-        setValue("divisionName", userData.division || "");
-        setValue("userType", userData.role || "");
+        setValue("phoneNumber", userData.phoneNumber || "");
+        setValue("company", userData.company || "");
+        setValue("zone", userData.zone || "");
+        setValue("branch", userData.branch || "");
+        setValue("division", userData.division || "");
+        setValue("role", userData.role || "");
         setValue("organization", userData.organization || "");
         setValue("lob", userData.lob || "");
         setValue("isScoreReportUser", userData.isScoreReportUser || false);
@@ -156,76 +156,76 @@ export default function EditUser({ params }: { params: { userId: string } }) {
             <div>
               <Label className="block text-gray-700 dark:text-gray-300">Phone Number</Label>
               <Input
-                {...register("phoneNo")}
+                {...register("phoneNumber")}
                 placeholder="Enter Phone Number"
                 className="mt-1 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
               />
-              {errors.phoneNo && <p className="text-red-600 dark:text-red-400">{errors.phoneNo.message}</p>}
+              {errors.phoneNumber && <p className="text-red-600 dark:text-red-400">{errors.phoneNumber.message}</p>}
             </div>
             <div>
               <Label className="block text-gray-700 dark:text-gray-300 mb-1">Company Name</Label>
-              <Select value={getValues("companyName")} onValueChange={handleSelectChange("companyName")}>
+              <Select value={getValues("company")} onValueChange={handleSelectChange("company")}>
                 <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
-                  {getValues("companyName") || "Select Company Name"}
+                  {getValues("company") || "Select Company Name"}
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Company A">Company A</SelectItem>
                   <SelectItem value="Company B">Company B</SelectItem>
                 </SelectContent>
               </Select>
-              {errors.companyName && <p className="text-red-600 dark:text-red-400">{errors.companyName.message}</p>}
+              {errors.company && <p className="text-red-600 dark:text-red-400">{errors.company.message}</p>}
             </div>
             <div>
               <Label className="block text-gray-700 dark:text-gray-300 mb-1">Zone Name</Label>
-              <Select value={getValues("zoneName")} onValueChange={handleSelectChange("zoneName")}>
+              <Select value={getValues("zone")} onValueChange={handleSelectChange("zone")}>
                 <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
-                  {getValues("zoneName") || "Select Zone Name"}
+                  {getValues("zone") || "Select Zone Name"}
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Zone 1">Zone 1</SelectItem>
                   <SelectItem value="Zone 2">Zone 2</SelectItem>
                 </SelectContent>
               </Select>
-              {errors.zoneName && <p className="text-red-600 dark:text-red-400">{errors.zoneName.message}</p>}
+              {errors.zone && <p className="text-red-600 dark:text-red-400">{errors.zone.message}</p>}
             </div>
             <div>
               <Label className="block text-gray-700 dark:text-gray-300 mb-1">Branch Name</Label>
-              <Select value={getValues("branchName")} onValueChange={handleSelectChange("branchName")}>
+              <Select value={getValues("branch")} onValueChange={handleSelectChange("branch")}>
                 <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
-                  {getValues("branchName") || "Select Branch Name"}
+                  {getValues("branch") || "Select Branch Name"}
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Branch A">Branch A</SelectItem>
                   <SelectItem value="Branch B">Branch B</SelectItem>
                 </SelectContent>
               </Select>
-              {errors.branchName && <p className="text-red-600 dark:text-red-400">{errors.branchName.message}</p>}
+              {errors.branch && <p className="text-red-600 dark:text-red-400">{errors.branch.message}</p>}
             </div>
             <div>
               <Label className="block text-gray-700 dark:text-gray-300 mb-1">Division Name</Label>
-              <Select value={getValues("divisionName")} onValueChange={handleSelectChange("divisionName")}>
+              <Select value={getValues("division")} onValueChange={handleSelectChange("division")}>
                 <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
-                  {getValues("divisionName") || "Select Division Name"}
+                  {getValues("division") || "Select Division Name"}
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Division 1">Division 1</SelectItem>
                   <SelectItem value="Division 2">Division 2</SelectItem>
                 </SelectContent>
               </Select>
-              {errors.divisionName && <p className="text-red-600 dark:text-red-400">{errors.divisionName.message}</p>}
+              {errors.division && <p className="text-red-600 dark:text-red-400">{errors.division.message}</p>}
             </div>
             <div>
               <Label className="block text-gray-700 dark:text-gray-300 mb-1">User Type</Label>
-              <Select value={getValues("userType")} onValueChange={handleSelectChange("userType")}>
+              <Select value={getValues("role")} onValueChange={handleSelectChange("role")}>
                 <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
-                  {getValues("userType") || "Select User Type"}
+                  {getValues("role") || "Select User Type"}
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Admin">Admin</SelectItem>
                   <SelectItem value="User">User</SelectItem>
                 </SelectContent>
               </Select>
-              {errors.userType && <p className="text-red-600 dark:text-red-400">{errors.userType.message}</p>}
+              {errors.role && <p className="text-red-600 dark:text-red-400">{errors.role.message}</p>}
             </div>
             <div>
               <Label className="block text-gray-700 dark:text-gray-300 mb-1">Organization</Label>

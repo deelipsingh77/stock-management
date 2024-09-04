@@ -15,21 +15,21 @@ import {
 } from "@/components/ui/select";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
-  userId: z.string().min(1, "User ID is required"),
   username: z.string().min(1, "Username is required"),
   password: z.string().min(8, "Password must be at least 8 characters"),
   email: z.string().email("Invalid email address"),
-  phoneNo: z
+  phoneNumber: z
     .string()
     .min(10, "Phone number must be at least 10 digits")
     .max(15, "Phone number cannot exceed 15 digits"),
-  companyName: z.string().min(1, "Company name is required"),
-  zoneName: z.string().min(1, "Zone name is required"),
-  branchName: z.string().min(1, "Branch name is required"),
-  divisionName: z.string().min(1, "Division name is required"),
-  userType: z.string().min(1, "User type is required"),
+  company: z.string().min(1, "Company name is required"),
+  zone: z.string().min(1, "Zone name is required"),
+  branch: z.string().min(1, "Branch name is required"),
+  division: z.string().min(1, "Division name is required"),
+  role: z.string().min(1, "User type is required"),
   organization: z.string().min(1, "Organization is required"),
   lob: z.string().min(1, "Lob is required"),
   isScoreReportUser: z.boolean(),
@@ -38,6 +38,7 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>;
 
 export default function ProfileForm() {
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -50,12 +51,14 @@ export default function ProfileForm() {
 
   const onSubmit = async (data: FormData) => {
     try {
+      console.log(data);
       const response = await axios.post(
         (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000") +
           "/api/v1/users/register",
         data
       );
       console.log(response);
+      router.push("/manage-users");
     } catch (error) {
       console.error("Error submitting form", error);
     }
@@ -65,16 +68,14 @@ export default function ProfileForm() {
     setValue(name, value as any);
   };
 
-  // Watch values for Select fields
-  const companyName = watch("companyName");
-  const zoneName = watch("zoneName");
-  const branchName = watch("branchName");
-  const divisionName = watch("divisionName");
-  const userType = watch("userType");
+  const company = watch("company");
+  const zone = watch("zone");
+  const branch = watch("branch");
+  const division = watch("division");
+  const role = watch("role");
   const organization = watch("organization");
   const lob = watch("lob");
 
-  // Aggregate and filter errors
   const errorMessages = Object.values(errors)
     .map((error) => error.message)
     .filter((message) => message && !message.startsWith("Required"))
@@ -84,7 +85,6 @@ export default function ProfileForm() {
     <div className="flex justify-center bg-gray-100 dark:bg-gray-900">
       <div className="w-full max-w-4xl bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-          {/* Single Alert for All Errors */}
           {errorMessages && (
             <Alert variant="destructive">
               <AlertTitle>Error</AlertTitle>
@@ -92,16 +92,6 @@ export default function ProfileForm() {
             </Alert>
           )}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <Label className="block text-gray-700 dark:text-gray-300">
-                User ID
-              </Label>
-              <Input
-                {...register("userId")}
-                placeholder="Enter User ID"
-                className="mt-1 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
-              />
-            </div>
             <div>
               <Label className="block text-gray-700 dark:text-gray-300">
                 Username
@@ -139,7 +129,7 @@ export default function ProfileForm() {
                 Phone Number
               </Label>
               <Input
-                {...register("phoneNo")}
+                {...register("phoneNumber")}
                 placeholder="Enter Phone Number"
                 className="mt-1 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
               />
@@ -148,10 +138,10 @@ export default function ProfileForm() {
               <Label className="block text-gray-700 dark:text-gray-300 mb-1">
                 Company Name
               </Label>
-              <Select onValueChange={handleSelectChange("companyName")}>
+              <Select onValueChange={handleSelectChange("company")}>
                 <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
                   <SelectValue placeholder="Select Company Name">
-                    {companyName || "Select Company Name"}
+                    {company || "Select Company Name"}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
@@ -164,10 +154,10 @@ export default function ProfileForm() {
               <Label className="block text-gray-700 dark:text-gray-300 mb-1">
                 Zone Name
               </Label>
-              <Select onValueChange={handleSelectChange("zoneName")}>
+              <Select onValueChange={handleSelectChange("zone")}>
                 <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
                   <SelectValue placeholder="Select Zone Name">
-                    {zoneName || "Select Zone Name"}
+                    {zone || "Select Zone Name"}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
@@ -180,10 +170,10 @@ export default function ProfileForm() {
               <Label className="block text-gray-700 dark:text-gray-300 mb-1">
                 Branch Name
               </Label>
-              <Select onValueChange={handleSelectChange("branchName")}>
+              <Select onValueChange={handleSelectChange("branch")}>
                 <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
                   <SelectValue placeholder="Select Branch Name">
-                    {branchName || "Select Branch Name"}
+                    {branch || "Select Branch Name"}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
@@ -196,10 +186,10 @@ export default function ProfileForm() {
               <Label className="block text-gray-700 dark:text-gray-300 mb-1">
                 Division Name
               </Label>
-              <Select onValueChange={handleSelectChange("divisionName")}>
+              <Select onValueChange={handleSelectChange("division")}>
                 <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
                   <SelectValue placeholder="Select Division Name">
-                    {divisionName || "Select Division Name"}
+                    {division || "Select Division Name"}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
@@ -212,10 +202,10 @@ export default function ProfileForm() {
               <Label className="block text-gray-700 dark:text-gray-300 mb-1">
                 User Type
               </Label>
-              <Select onValueChange={handleSelectChange("userType")}>
+              <Select onValueChange={handleSelectChange("role")}>
                 <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
                   <SelectValue placeholder="Select User Type">
-                    {userType || "Select User Type"}
+                    {role || "Select User Type"}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
@@ -256,14 +246,14 @@ export default function ProfileForm() {
                 </SelectContent>
               </Select>
             </div>
-            <div>
-              <Label className="block text-gray-700 dark:text-gray-300">
+            <div className="flex gap-3 items-center">
+              <Label className="block text-gray-700 dark:text-gray-300 text-md">
                 Is Score Report User
               </Label>
               <input
                 {...register("isScoreReportUser")}
                 type="checkbox"
-                className="mt-1 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                className="w-4 h-4 mt-1 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
               />
             </div>
           </div>
