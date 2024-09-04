@@ -13,10 +13,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
 
 const formSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -67,10 +67,13 @@ export default function ProfileForm() {
       console.log(response);
       router.push("/manage-users");
     } catch (error: Error | any) {
-      console.error("Error submitting form", error.response.data.message);
+      console.error(
+        "Error submitting form",
+        error.response?.data?.message || error.message
+      );
       toast({
         title: "Error",
-        description: error.response.data.message || "An error occurred",
+        description: error.response?.data?.message || "An error occurred",
         variant: "destructive",
       });
     }
@@ -80,29 +83,29 @@ export default function ProfileForm() {
     setValue(name, value as any);
   };
 
-  const company = watch("company");
-  const zone = watch("zone");
-  const branch = watch("branch");
-  const division = watch("division");
-  const role = watch("role");
-  const organization = watch("organization");
-  const lob = watch("lob");
-
-  const errorMessages = Object.values(errors)
-    .map((error) => error.message)
-    .filter((message) => message && !message.startsWith("Required"))
-    .join(", ");
+  // Show toast for form errors
+  useEffect(() => {
+    if (Object.keys(errors).length > 0) {
+      const errorMessages = Object.entries(errors)
+        .map(([key, error]) => {
+          const field = key.charAt(0).toUpperCase() + key.slice(1);
+          return error ? `${field} ${error.message}` : "";
+        })
+        .filter((message) => message)
+        .join(", ");
+        
+      toast({
+        title: "Form Error",
+        description: errorMessages,
+        variant: "destructive",
+      });
+    }
+  }, [errors, toast]);
 
   return (
     <div className="flex justify-center bg-gray-100 dark:bg-gray-900">
       <div className="w-full max-w-4xl bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-          {errorMessages && (
-            <Alert variant="destructive">
-              <AlertTitle>Error</AlertTitle>
-              <AlertDescription>{errorMessages}</AlertDescription>
-            </Alert>
-          )}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <Label className="block text-gray-700 dark:text-gray-300">
@@ -153,7 +156,7 @@ export default function ProfileForm() {
               <Select onValueChange={handleSelectChange("company")}>
                 <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
                   <SelectValue placeholder="Select Company Name">
-                    {company || "Select Company Name"}
+                    {watch("company") || "Select Company Name"}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
@@ -169,7 +172,7 @@ export default function ProfileForm() {
               <Select onValueChange={handleSelectChange("zone")}>
                 <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
                   <SelectValue placeholder="Select Zone Name">
-                    {zone || "Select Zone Name"}
+                    {watch("zone") || "Select Zone Name"}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
@@ -185,7 +188,7 @@ export default function ProfileForm() {
               <Select onValueChange={handleSelectChange("branch")}>
                 <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
                   <SelectValue placeholder="Select Branch Name">
-                    {branch || "Select Branch Name"}
+                    {watch("branch") || "Select Branch Name"}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
@@ -201,7 +204,7 @@ export default function ProfileForm() {
               <Select onValueChange={handleSelectChange("division")}>
                 <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
                   <SelectValue placeholder="Select Division Name">
-                    {division || "Select Division Name"}
+                    {watch("division") || "Select Division Name"}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
@@ -217,7 +220,7 @@ export default function ProfileForm() {
               <Select onValueChange={handleSelectChange("role")}>
                 <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
                   <SelectValue placeholder="Select User Type">
-                    {role || "Select User Type"}
+                    {watch("role") || "Select User Type"}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
@@ -233,7 +236,7 @@ export default function ProfileForm() {
               <Select onValueChange={handleSelectChange("organization")}>
                 <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
                   <SelectValue placeholder="Select Organization">
-                    {organization || "Select Organization"}
+                    {watch("organization") || "Select Organization"}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
@@ -249,7 +252,7 @@ export default function ProfileForm() {
               <Select onValueChange={handleSelectChange("lob")}>
                 <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
                   <SelectValue placeholder="Select Lob">
-                    {lob || "Select Lob"}
+                    {watch("lob") || "Select Lob"}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
@@ -270,8 +273,8 @@ export default function ProfileForm() {
             </div>
           </div>
 
-          <div className="mt-6">
-            <Button type="submit" className="w-full">
+          <div className="mt-6 flex justify-end">
+            <Button type="submit" className="hover:bg-gray-600">
               Submit
             </Button>
           </div>

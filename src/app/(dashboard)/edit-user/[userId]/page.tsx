@@ -11,13 +11,13 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { useToast } from "@/hooks/use-toast";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import _ from "lodash";
-import { useToast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -63,12 +63,11 @@ export default function EditUser({ params }: { params: { userId: string } }) {
           (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000") +
             `/api/v1/users/${params.userId}`,
           {
-            withCredentials: true, // Include cookies if required
+            withCredentials: true,
           }
         );
         setUser(response.data.message);
 
-        // Set form values
         const userData = response.data.message;
         userData.role = _.capitalize(userData.role);
         console.log(userData);
@@ -89,12 +88,17 @@ export default function EditUser({ params }: { params: { userId: string } }) {
       } catch (err) {
         console.error("Fetch Error:", err);
         setError("Failed to fetch user details.");
+        toast({
+          title: "Fetch Error",
+          description: "Failed to fetch user details.",
+          variant: "destructive",
+        });
         setLoading(false);
       }
     };
 
     fetchUser();
-  }, [params.userId]);
+  }, [params.userId, toast]);
 
   const onSubmit = async (data: FormData) => {
     try {
@@ -105,18 +109,22 @@ export default function EditUser({ params }: { params: { userId: string } }) {
           `/api/v1/users/${params.userId}`,
         data,
         {
-          withCredentials: true, // Include cookies if required
+          withCredentials: true,
         }
       );
       toast({
-        title: "Submitted",
-        description: "User Update Successful",
+        title: "Success",
+        description: "User update successful.",
         variant: "default",
       });
-      router.push("/manage-users"); // Redirect to users list or any other page
+      router.push("/manage-users");
     } catch (error) {
       console.error("Update Error:", error);
-      setError("Failed to update user.");
+      toast({
+        title: "Update Error",
+        description: "Failed to update user.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -124,11 +132,22 @@ export default function EditUser({ params }: { params: { userId: string } }) {
     setValue(name, value as any, { shouldValidate: true });
   };
 
-  // Aggregate and filter errors
-  const errorMessages = Object.values(errors)
-    .map((error) => error.message)
-    .filter((message) => message && !message.startsWith("Required"))
-    .join(", ");
+  useEffect(() => {
+    if (Object.keys(errors).length > 0) {
+      const errorMessages = Object.entries(errors).map(([key, error]) => {
+        const field = key.charAt(0).toUpperCase() + key.slice(1);
+        return error ? `${field} ${error.message}` : "";
+      }).filter((message) => message).join(", ");
+
+      if (errorMessages) {
+        toast({
+          title: "Form Error",
+          description: errorMessages,
+          variant: "destructive",
+        });
+      }
+    }
+  }, [errors, toast]);
 
   if (loading)
     return <p className="text-gray-700 dark:text-gray-300">Loading...</p>;
@@ -138,13 +157,6 @@ export default function EditUser({ params }: { params: { userId: string } }) {
     <div className="flex justify-center bg-gray-100 dark:bg-gray-900">
       <div className="w-full max-w-4xl bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-          {/* Single Alert for All Errors */}
-          {errorMessages && (
-            <Alert variant="destructive">
-              <AlertTitle>Error</AlertTitle>
-              <AlertDescription>{errorMessages}</AlertDescription>
-            </Alert>
-          )}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <Label className="block text-gray-700 dark:text-gray-300">
@@ -155,11 +167,6 @@ export default function EditUser({ params }: { params: { userId: string } }) {
                 placeholder="Enter Username"
                 className="mt-1 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
               />
-              {errors.username && (
-                <p className="text-red-600 dark:text-red-400">
-                  {errors.username.message}
-                </p>
-              )}
             </div>
             <div>
               <Label className="block text-gray-700 dark:text-gray-300">
@@ -171,11 +178,6 @@ export default function EditUser({ params }: { params: { userId: string } }) {
                 placeholder="Enter Email"
                 className="mt-1 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
               />
-              {errors.email && (
-                <p className="text-red-600 dark:text-red-400">
-                  {errors.email.message}
-                </p>
-              )}
             </div>
             <div>
               <Label className="block text-gray-700 dark:text-gray-300">
@@ -186,11 +188,6 @@ export default function EditUser({ params }: { params: { userId: string } }) {
                 placeholder="Enter Phone Number"
                 className="mt-1 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
               />
-              {errors.phoneNumber && (
-                <p className="text-red-600 dark:text-red-400">
-                  {errors.phoneNumber.message}
-                </p>
-              )}
             </div>
             <div>
               <Label className="block text-gray-700 dark:text-gray-300 mb-1">
@@ -201,18 +198,15 @@ export default function EditUser({ params }: { params: { userId: string } }) {
                 onValueChange={handleSelectChange("company")}
               >
                 <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
-                  {getValues("company") || "Select Company Name"}
+                  <SelectValue placeholder="Select Company Name">
+                    {getValues("company") || "Select Company Name"}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Company A">Company A</SelectItem>
                   <SelectItem value="Company B">Company B</SelectItem>
                 </SelectContent>
               </Select>
-              {errors.company && (
-                <p className="text-red-600 dark:text-red-400">
-                  {errors.company.message}
-                </p>
-              )}
             </div>
             <div>
               <Label className="block text-gray-700 dark:text-gray-300 mb-1">
@@ -223,18 +217,15 @@ export default function EditUser({ params }: { params: { userId: string } }) {
                 onValueChange={handleSelectChange("zone")}
               >
                 <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
-                  {getValues("zone") || "Select Zone Name"}
+                  <SelectValue placeholder="Select Zone Name">
+                    {getValues("zone") || "Select Zone Name"}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Zone 1">Zone 1</SelectItem>
                   <SelectItem value="Zone 2">Zone 2</SelectItem>
                 </SelectContent>
               </Select>
-              {errors.zone && (
-                <p className="text-red-600 dark:text-red-400">
-                  {errors.zone.message}
-                </p>
-              )}
             </div>
             <div>
               <Label className="block text-gray-700 dark:text-gray-300 mb-1">
@@ -245,18 +236,15 @@ export default function EditUser({ params }: { params: { userId: string } }) {
                 onValueChange={handleSelectChange("branch")}
               >
                 <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
-                  {getValues("branch") || "Select Branch Name"}
+                  <SelectValue placeholder="Select Branch Name">
+                    {getValues("branch") || "Select Branch Name"}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Branch A">Branch A</SelectItem>
                   <SelectItem value="Branch B">Branch B</SelectItem>
                 </SelectContent>
               </Select>
-              {errors.branch && (
-                <p className="text-red-600 dark:text-red-400">
-                  {errors.branch.message}
-                </p>
-              )}
             </div>
             <div>
               <Label className="block text-gray-700 dark:text-gray-300 mb-1">
@@ -267,18 +255,15 @@ export default function EditUser({ params }: { params: { userId: string } }) {
                 onValueChange={handleSelectChange("division")}
               >
                 <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
-                  {getValues("division") || "Select Division Name"}
+                  <SelectValue placeholder="Select Division Name">
+                    {getValues("division") || "Select Division Name"}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Division 1">Division 1</SelectItem>
-                  <SelectItem value="Division 2">Division 2</SelectItem>
+                  <SelectItem value="Division A">Division A</SelectItem>
+                  <SelectItem value="Division B">Division B</SelectItem>
                 </SelectContent>
               </Select>
-              {errors.division && (
-                <p className="text-red-600 dark:text-red-400">
-                  {errors.division.message}
-                </p>
-              )}
             </div>
             <div>
               <Label className="block text-gray-700 dark:text-gray-300 mb-1">
@@ -289,40 +274,15 @@ export default function EditUser({ params }: { params: { userId: string } }) {
                 onValueChange={handleSelectChange("role")}
               >
                 <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
-                  {getValues("role") || "Select User Type"}
+                  <SelectValue placeholder="Select User Type">
+                    {getValues("role") || "Select User Type"}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Admin">Admin</SelectItem>
                   <SelectItem value="User">User</SelectItem>
                 </SelectContent>
               </Select>
-              {errors.role && (
-                <p className="text-red-600 dark:text-red-400">
-                  {errors.role.message}
-                </p>
-              )}
-            </div>
-            <div>
-              <Label className="block text-gray-700 dark:text-gray-300 mb-1">
-                Organization
-              </Label>
-              <Select
-                value={getValues("organization")}
-                onValueChange={handleSelectChange("organization")}
-              >
-                <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
-                  {getValues("organization") || "Select Organization"}
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Org A">Org A</SelectItem>
-                  <SelectItem value="Org B">Org B</SelectItem>
-                </SelectContent>
-              </Select>
-              {errors.organization && (
-                <p className="text-red-600 dark:text-red-400">
-                  {errors.organization.message}
-                </p>
-              )}
             </div>
             <div>
               <Label className="block text-gray-700 dark:text-gray-300 mb-1">
@@ -333,18 +293,34 @@ export default function EditUser({ params }: { params: { userId: string } }) {
                 onValueChange={handleSelectChange("lob")}
               >
                 <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
-                  {getValues("lob") || "Select Lob"}
+                  <SelectValue placeholder="Select Lob">
+                    {getValues("lob") || "Select Lob"}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Lob A">Lob A</SelectItem>
                   <SelectItem value="Lob B">Lob B</SelectItem>
                 </SelectContent>
               </Select>
-              {errors.lob && (
-                <p className="text-red-600 dark:text-red-400">
-                  {errors.lob.message}
-                </p>
-              )}
+            </div>
+            <div>
+              <Label className="block text-gray-700 dark:text-gray-300 mb-1">
+                Organization
+              </Label>
+              <Select
+                value={getValues("organization")}
+                onValueChange={handleSelectChange("organization")}
+              >
+                <SelectTrigger className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100">
+                  <SelectValue placeholder="Select Organization">
+                    {getValues("organization") || "Select Organization"}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Org A">Org A</SelectItem>
+                  <SelectItem value="Org B">Org B</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="flex items-center gap-3">
               <Label className="block text-gray-700 dark:text-gray-300 text-md">
@@ -355,15 +331,9 @@ export default function EditUser({ params }: { params: { userId: string } }) {
                 type="checkbox"
                 className="mt-1 text-gray-900 dark:text-gray-100 h-4 w-4"
               />
-              {errors.isScoreReportUser && (
-                <p className="text-red-600 dark:text-red-400">
-                  {errors.isScoreReportUser.message}
-                </p>
-              )}
             </div>
           </div>
           <div className="flex justify-end gap-3">
-            {/* <Button className="bg-slate-300 hover:bg-slate-500 text-black" onClick={()=>{router.push("/manage-users")}}>Cancel</Button> */}
             <Button
               className="bg-slate-300 hover:bg-slate-500 text-black"
               onClick={(e) => {
@@ -377,7 +347,7 @@ export default function EditUser({ params }: { params: { userId: string } }) {
             >
               Cancel
             </Button>
-            <Button type="submit" className="hover:bg-gray-800">
+            <Button type="submit" className="hover:bg-green-500">
               Submit
             </Button>
           </div>
