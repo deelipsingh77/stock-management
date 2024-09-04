@@ -1,7 +1,7 @@
 "use client";
 import ProtectedRoute from "@/utils/ProtectedRoute";
 import { ReactNode } from "react";
-import { Sun, Moon, UserCircle, Menu } from "lucide-react";
+import { Sun, Moon, UserCircle, Menu, User2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -17,6 +17,9 @@ import { useTheme } from "next-themes";
 import React from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
+import { usePathname } from "next/navigation"; // Import usePathname
+import { navItems } from "@/utils/Routes"; // Import your routes
+import Image from "next/image";
 
 interface LayoutProps {
   children: ReactNode;
@@ -25,16 +28,44 @@ interface LayoutProps {
 const Layout = ({ children }: LayoutProps) => {
   const [desktopSidebarOpen, setDesktopSidebarOpen] = React.useState(true); // State for desktop sidebar
   const [mounted, setMounted] = React.useState(false);
+  const [avatarUrl, setAvatarUrl] = React.useState<string>("");
   const { theme, setTheme } = useTheme();
   const { logout } = useAuth();
+  const pathname = usePathname(); // Get the current path
+
+  const generateRandomAvatarUrl = () => {
+    const randomString = Math.random().toString(36).substring(7); // Generate a random string
+    return `https://api.multiavatar.com/${randomString}.svg`;
+  };
 
   React.useEffect(() => {
     setMounted(true);
+    const url = generateRandomAvatarUrl();
+    console.log(url);
+
+    setAvatarUrl(url);
   }, []);
 
   if (!mounted) {
     return null;
   }
+
+  // Function to get the page title based on the current path
+  const getPageTitle = () => {
+    for (const item of navItems) {
+      if (item.href === pathname) {
+        return item.title;
+      }
+      if (item.submenu) {
+        for (const subItem of item.submenu) {
+          if (subItem.href === pathname) {
+            return subItem.title;
+          }
+        }
+      }
+    }
+    return "Dashboard"; // Default title
+  };
 
   return (
     <ProtectedRoute>
@@ -58,7 +89,10 @@ const Layout = ({ children }: LayoutProps) => {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className={cn("lg:hidden", theme === "dark" && "text-white")}
+                    className={cn(
+                      "lg:hidden",
+                      theme === "dark" && "text-white"
+                    )}
                     aria-label="Open sidebar"
                   >
                     <Menu className="h-6 w-6" />
@@ -73,7 +107,7 @@ const Layout = ({ children }: LayoutProps) => {
                 </SheetContent>
               </Sheet>
               <h1 className="text-2xl font-semibold text-gray-800 dark:text-white ml-4">
-                Dashboard
+                {getPageTitle()} {/* Dynamically display the page title */}
               </h1>
             </div>
             <div className="flex items-center space-x-4">
@@ -92,19 +126,24 @@ const Layout = ({ children }: LayoutProps) => {
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="relative h-8 w-8 rounded-full border-gray-300 border-2"
-                  >
-                    <UserCircle className="h-8 w-8 text-gray-700 dark:text-gray-300" />
-                  </Button>
+                  <div className="rounded-full h-8 w-8 overflow-hidden cursor-pointer">
+                    <Image
+                      src={avatarUrl}
+                      alt="User Avatar"
+                      className="h-full w-full rounded-full object-cover"
+                      width={32}
+                      height={32}
+                    />
+                  </div>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuLabel>My Account</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem>Profile</DropdownMenuItem>
                   <DropdownMenuItem>Settings</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => logout()}>Log out</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => logout()}>
+                    Log out
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>

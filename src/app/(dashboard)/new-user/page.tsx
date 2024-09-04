@@ -16,6 +16,7 @@ import {
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -39,6 +40,7 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function ProfileForm() {
   const router = useRouter();
+  const { toast } = useToast();
   const {
     register,
     handleSubmit,
@@ -57,10 +59,20 @@ export default function ProfileForm() {
           "/api/v1/users/register",
         data
       );
+      toast({
+        title: "Success",
+        description: "User created successfully",
+        variant: "default",
+      });
       console.log(response);
       router.push("/manage-users");
-    } catch (error) {
-      console.error("Error submitting form", error);
+    } catch (error: Error | any) {
+      console.error("Error submitting form", error.response.data.message);
+      toast({
+        title: "Error",
+        description: error.response.data.message || "An error occurred",
+        variant: "destructive",
+      });
     }
   };
 
